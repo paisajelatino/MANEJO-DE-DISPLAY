@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>PAISAJE</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#F4F1EC; --surface:#FDFCF9; --dark:#1C1916; --mid:#7A7470;
+  --light:#C4BEB8; --border:rgba(0,0,0,0.07); --border2:rgba(0,0,0,0.12);
+  --green:#3A6B3A;
+  --moda:#3D3060; --moda-bg:#EEEAF8;
+  --acc:#2B5C48;  --acc-bg:#E4F2EC;
+  --obj:#5C3A2B;  --obj-bg:#F5EDE8;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--dark);min-height:100vh;}
+
+header{background:var(--dark);padding:48px 20px 18px;display:flex;justify-content:space-between;align-items:flex-end;}
+header h1{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:30px;color:#F4F1EC;letter-spacing:0.14em;}
+header .date-str{font-size:11px;color:rgba(244,241,236,0.45);letter-spacing:0.06em;text-transform:uppercase;text-align:right;line-height:1.6;}
+
+.tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:40;}
+.tab{flex:1;padding:13px 0;text-align:center;font-size:13px;color:var(--mid);cursor:pointer;border-bottom:2px solid transparent;}
+.tab.active{color:var(--dark);border-bottom-color:var(--dark);font-weight:500;}
+
+.view{display:none;}
+.view.active{display:block;}
+
+/* MARCAS */
+.cat-section{margin-bottom:6px;}
+.cat-header{display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.09em;border-bottom:1px solid var(--border);position:sticky;top:43px;z-index:30;}
+.cat-header.moda{background:var(--moda-bg);color:var(--moda);}
+.cat-header.acc{background:var(--acc-bg);color:var(--acc);}
+.cat-header.obj{background:var(--obj-bg);color:var(--obj);}
+.cat-count{margin-left:auto;font-size:12px;opacity:0.7;}
+
+.brand-list{background:var(--surface);}
+.brand-row{border-bottom:1px solid var(--border);}
+.brand-row:last-child{border-bottom:none;}
+.brand-header{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;}
+.brand-toggle{width:40px;height:24px;border-radius:12px;background:var(--light);position:relative;flex-shrink:0;transition:background 0.2s;}
+.brand-toggle.on{background:var(--green);}
+.brand-toggle::after{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:white;top:3px;left:3px;transition:transform 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2);}
+.brand-toggle.on::after{transform:translateX(16px);}
+.brand-name{flex:1;font-size:14px;}
+.brand-total{font-family:'Cormorant Garamond',serif;font-size:22px;}
+.brand-total-label{font-size:10px;color:var(--mid);text-align:right;}
+.brand-chevron{font-size:12px;color:var(--light);transition:transform 0.2s;margin-left:4px;}
+.brand-chevron.open{transform:rotate(180deg);}
+.brand-ficha{display:none;padding:0 16px 16px 68px;background:#F8F6F2;border-top:1px solid var(--border);}
+.brand-ficha.open{display:block;}
+.ficha-title{font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--mid);padding:12px 0 8px;}
+.tipo-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);}
+.tipo-row:last-child{border-bottom:none;}
+.tipo-label{flex:1;font-size:13px;}
+.qty-wrap{display:flex;align-items:center;}
+.qty-btn{width:32px;height:32px;border:1px solid var(--border2);background:var(--surface);color:var(--dark);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;user-select:none;}
+.qty-btn:first-child{border-radius:8px 0 0 8px;}
+.qty-btn:last-child{border-radius:0 8px 8px 0;}
+.qty-num{width:38px;text-align:center;font-size:15px;font-weight:500;border-top:1px solid var(--border2);border-bottom:1px solid var(--border2);height:32px;line-height:32px;background:white;}
+
+/* CERRAR REVISIÓN */
+.close-bar{padding:16px;margin-bottom:80px;}
+.btn-close{width:100%;padding:16px;background:var(--dark);color:#F4F1EC;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;letter-spacing:0.04em;}
+
+/* GRÁFICO */
+.chart-view{padding:20px 16px 100px;}
+.chart-header{margin-bottom:20px;}
+.chart-header h2{font-family:'Cormorant Garamond',serif;font-weight:400;font-size:24px;}
+.chart-header p{font-size:12px;color:var(--mid);margin-top:3px;}
+.big3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:24px;}
+.big3-card{border-radius:12px;padding:14px 12px;text-align:center;}
+.big3-card.moda{background:var(--moda-bg);}
+.big3-card.acc{background:var(--acc-bg);}
+.big3-card.obj{background:var(--obj-bg);}
+.big3-num{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:400;line-height:1;}
+.big3-card.moda .big3-num{color:var(--moda);}
+.big3-card.acc .big3-num{color:var(--acc);}
+.big3-card.obj .big3-num{color:var(--obj);}
+.big3-label{font-size:10px;text-transform:uppercase;letter-spacing:0.07em;color:var(--mid);margin-top:4px;}
+.big3-pct{font-size:13px;font-weight:500;margin-top:2px;}
+.big3-card.moda .big3-pct{color:var(--moda);}
+.big3-card.acc .big3-pct{color:var(--acc);}
+.big3-card.obj .big3-pct{color:var(--obj);}
+.pie-wrap{display:flex;justify-content:center;margin-bottom:28px;}
+canvas#pie{max-width:260px;width:100%;}
+.desglose{display:flex;flex-direction:column;gap:20px;}
+.desglose-section{background:var(--surface);border-radius:12px;overflow:hidden;}
+.desglose-title{padding:12px 14px;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;border-bottom:1px solid var(--border);}
+.desglose-title.moda{background:var(--moda-bg);color:var(--moda);}
+.desglose-title.acc{background:var(--acc-bg);color:var(--acc);}
+.desglose-title.obj{background:var(--obj-bg);color:var(--obj);}
+.desglose-rows{padding:8px 14px;}
+.d-section-label{font-size:10px;text-transform:uppercase;letter-spacing:0.07em;color:var(--mid);padding:8px 0 4px;}
+.d-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);}
+.d-row:last-child{border-bottom:none;}
+.d-name{font-size:13px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.d-bar-track{width:80px;height:6px;background:rgba(0,0,0,0.07);border-radius:3px;overflow:hidden;flex-shrink:0;}
+.d-bar-fill{height:100%;border-radius:3px;}
+.d-num{font-size:13px;font-weight:500;width:24px;text-align:right;flex-shrink:0;}
+.d-pct{font-size:11px;color:var(--mid);width:32px;text-align:right;flex-shrink:0;}
+.empty-chart{text-align:center;padding:50px 20px;color:var(--mid);font-size:14px;}
+
+/* HISTORIAL */
+.hist-view{padding:16px 16px 100px;}
+.hist-header{margin-bottom:20px;}
+.hist-header h2{font-family:'Cormorant Garamond',serif;font-weight:400;font-size:24px;}
+.hist-header p{font-size:12px;color:var(--mid);margin-top:3px;}
+.hist-empty{text-align:center;padding:60px 20px;color:var(--mid);font-size:14px;}
+.line-wrap{background:var(--surface);border-radius:12px;padding:16px 12px;margin-bottom:20px;}
+.line-wrap h3{font-size:13px;font-weight:500;margin-bottom:12px;color:var(--mid);text-transform:uppercase;letter-spacing:0.07em;}
+canvas#line{width:100%!important;}
+
+/* TABLA HISTORIAL */
+.hist-table-wrap{background:var(--surface);border-radius:12px;overflow:hidden;margin-bottom:20px;}
+.hist-table-wrap h3{font-size:13px;font-weight:500;padding:14px 16px 10px;color:var(--mid);text-transform:uppercase;letter-spacing:0.07em;border-bottom:1px solid var(--border);}
+.htable{width:100%;border-collapse:collapse;font-size:12px;}
+.htable th{padding:8px 10px;text-align:left;font-weight:500;font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:var(--mid);border-bottom:1px solid var(--border);background:var(--bg);}
+.htable td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:top;}
+.htable tr:last-child td{border-bottom:none;}
+.htable .fecha-col{color:var(--mid);white-space:nowrap;}
+.htable .num{text-align:right;font-weight:500;}
+.htable .pct{text-align:right;font-size:11px;color:var(--mid);}
+.cat-dot{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px;}
+
+/* REVISIÓN CARD */
+.rev-card{background:var(--surface);border-radius:12px;margin-bottom:12px;overflow:hidden;}
+.rev-card-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;border-bottom:1px solid var(--border);}
+.rev-card-title{font-size:14px;font-weight:500;}
+.rev-card-sub{font-size:12px;color:var(--mid);margin-top:2px;}
+.rev-card-badges{display:flex;gap:6px;}
+.rev-badge{font-size:11px;padding:3px 8px;border-radius:99px;font-weight:500;}
+.rev-badge.moda{background:var(--moda-bg);color:var(--moda);}
+.rev-badge.acc{background:var(--acc-bg);color:var(--acc);}
+.rev-badge.obj{background:var(--obj-bg);color:var(--obj);}
+.rev-detail{display:none;padding:12px 16px;}
+.rev-detail.open{display:block;}
+.rev-dtable{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:10px;}
+.rev-dtable th{padding:6px 8px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:0.05em;color:var(--mid);border-bottom:1px solid var(--border);}
+.rev-dtable td{padding:6px 8px;border-bottom:1px solid var(--border);}
+.rev-dtable tr:last-child td{border-bottom:none;}
+.btn-del-rev{font-size:11px;padding:5px 10px;border:1px solid rgba(180,60,60,0.3);border-radius:6px;background:transparent;color:#8B3030;cursor:pointer;font-family:'DM Sans',sans-serif;}
+
+/* FOOTER */
+.footer{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:10px 16px;padding-bottom:max(10px,env(safe-area-inset-bottom));display:flex;justify-content:space-between;align-items:center;}
+.footer-stat{font-size:12px;color:var(--mid);}
+.footer-stat strong{color:var(--dark);font-weight:500;}
+.btn-reset{font-size:12px;padding:7px 14px;border:1px solid var(--border2);border-radius:7px;background:transparent;color:var(--mid);cursor:pointer;font-family:'DM Sans',sans-serif;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>PAISAJE</h1>
+  <div class="date-str" id="hdr-date"></div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('marcas')">Marcas</div>
+  <div class="tab" onclick="switchTab('grafico')">Gráfico</div>
+  <div class="tab" onclick="switchTab('historial')">Historial</div>
+</div>
+
+<!-- MARCAS -->
+<div class="view active" id="view-marcas">
+  <div class="cat-section">
+    <div class="cat-header moda">Moda <span class="cat-count" id="cnt-moda"></span></div>
+    <div class="brand-list" id="list-moda"></div>
+  </div>
+  <div class="cat-section">
+    <div class="cat-header acc">Accesorios <span class="cat-count" id="cnt-acc"></span></div>
+    <div class="brand-list" id="list-acc"></div>
+  </div>
+  <div class="cat-section">
+    <div class="cat-header obj">Objetos <span class="cat-count" id="cnt-obj"></span></div>
+    <div class="brand-list" id="list-obj"></div>
+  </div>
+  <div class="close-bar">
+    <button class="btn-close" onclick="cerrarRevision()">Cerrar y guardar revisión</button>
+  </div>
+</div>
+
+<!-- GRÁFICO -->
+<div class="view" id="view-grafico">
+  <div class="chart-view">
+    <div class="chart-header">
+      <h2>Composición del espacio</h2>
+      <p id="chart-sub"></p>
+    </div>
+    <div class="big3" id="big3"></div>
+    <div class="pie-wrap"><canvas id="pie" width="260" height="260"></canvas></div>
+    <div class="desglose" id="desglose"></div>
+  </div>
+</div>
+
+<!-- HISTORIAL -->
+<div class="view" id="view-historial">
+  <div class="hist-view">
+    <div class="hist-header">
+      <h2>Historial de revisiones</h2>
+      <p id="hist-sub"></p>
+    </div>
+    <div id="hist-content"></div>
+  </div>
+</div>
+
+<div class="footer">
+  <div class="footer-stat" id="footer-stat"></div>
+  <button class="btn-reset" onclick="resetDia()">Reiniciar día</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const KEY     = 'paisaje_v8';
+const KEY_HIST = 'paisaje_hist_v2';
+
+const TIPOS = {
+  moda: ['Superior','Inferior','Vestido / Completo'],
+  acc:  ['Joyería','Marroquinería','Zapatos','Gafas','Otros'],
+  obj:  ['De pared','Escultórico']
+};
+const CAT_COLORS = { moda:'#3D3060', acc:'#2B5C48', obj:'#5C3A2B' };
+const CAT_LABELS = { moda:'Moda', acc:'Accesorios', obj:'Objetos' };
+
+const MARCAS_INIT = [
+  // MODA
+  {id:1,  nombre:'ALEJANDRO CROCKER',   cat:'moda'},
+  {id:2,  nombre:'ALGO CHEVERE',         cat:'moda'},
+  {id:3,  nombre:'ANCA RAVELO',          cat:'moda'},
+  {id:5,  nombre:'AQUELARRE',            cat:'moda'},
+  {id:6,  nombre:'ATALÁ',                cat:'moda'},
+  {id:7,  nombre:'AURORA',               cat:'moda'},
+  {id:8,  nombre:'CEMADIER',             cat:'moda'},
+  {id:9,  nombre:'CEREAL',               cat:'moda'},
+  {id:10, nombre:'CHRISTY BOLIVAR',      cat:'moda'},
+  {id:11, nombre:'CIENTO CINCO LUNARES', cat:'moda'},
+  {id:12, nombre:'CRISTIAN TULA',        cat:'moda'},
+  {id:13, nombre:'CRISTINA URIBE',       cat:'moda'},
+  {id:15, nombre:'CUENTO ANIMAL',        cat:'moda'},
+  {id:17, nombre:'EDÉN',                 cat:'moda'},
+  {id:18, nombre:'ÉLOPE',                cat:'moda'},
+  {id:19, nombre:'EME Y JOTA',           cat:'moda'},
+  {id:20, nombre:'EVIDENTE',             cat:'moda'},
+  {id:21, nombre:'FENARETA',             cat:'moda'},
+  {id:22, nombre:'GUAYABA AGRIA',        cat:'moda'},
+  {id:23, nombre:'HEROICA',              cat:'moda'},
+  {id:24, nombre:'HOTEL MANEVICH',       cat:'moda'},
+  {id:25, nombre:'KA DIPUGLIA',          cat:'moda'},
+  {id:26, nombre:'LIEBESTOD',            cat:'moda'},
+  {id:27, nombre:'LIEBRE',               cat:'moda'},
+  {id:28, nombre:'MAI PETIT',            cat:'moda'},
+  {id:29, nombre:'MAGLIONE',             cat:'moda'},
+  {id:31, nombre:'MARTÍN ACROSS',        cat:'moda'},
+  {id:32, nombre:'MAZ MANUELA ALVAREZ',  cat:'moda'},
+  {id:33, nombre:'MEMA STUDIO',          cat:'moda'},
+  {id:34, nombre:'MINKA',                cat:'moda'},
+  {id:62, nombre:'MACALO',               cat:'moda'},
+  {id:35, nombre:'PÁRAMO',               cat:'moda'},
+  {id:36, nombre:'QUEDATE',              cat:'moda'},
+  {id:37, nombre:'QUISPE',               cat:'moda'},
+  {id:38, nombre:'RAW STUDIO',           cat:'moda'},
+  {id:39, nombre:'SALÓN MIXTÉ',          cat:'moda'},
+  {id:40, nombre:'SANTO',                cat:'moda'},
+  {id:41, nombre:'SARA Y FLORA',         cat:'moda'},
+  {id:42, nombre:'SOBOTANICS',           cat:'moda'},
+  {id:43, nombre:'STEVAN VALENCIA',      cat:'moda'},
+  {id:44, nombre:'SUNSET THE JOURNEY',   cat:'moda'},
+  {id:45, nombre:'TENUIT',               cat:'moda'},
+  {id:46, nombre:'TIGRE INDIGO',         cat:'moda'},
+  {id:47, nombre:'TRABAJAJAJÁR',         cat:'moda'},
+  {id:48, nombre:'ZORRO Y JAGUAR',       cat:'moda'},
+  // ACCESORIOS
+  {id:50, nombre:'AMANI',                cat:'acc'},
+  {id:51, nombre:'CARI CARIBEÑA',        cat:'acc'},
+  {id:52, nombre:'CONGA CONGA',          cat:'acc'},
+  {id:53, nombre:'CRUDA',                cat:'acc'},
+  {id:54, nombre:'CRUR',                 cat:'acc'},
+  {id:55, nombre:'CURINOUMI',            cat:'acc'},
+  {id:56, nombre:'EXUVIA',               cat:'acc'},
+  {id:57, nombre:'HIERBA MALA',          cat:'acc'},
+  {id:58, nombre:'JUES',                 cat:'acc'},
+  {id:59, nombre:'KATA STUDIO',          cat:'acc'},
+  {id:60, nombre:'LA FEMME UNCHAINED',   cat:'acc'},
+  {id:61, nombre:'LOMBARDA CHARMS',      cat:'acc'},
+  {id:63, nombre:'MESTIZA',              cat:'acc'},
+  {id:64, nombre:'MILLANE TALE',         cat:'acc'},
+  {id:65, nombre:'PEYOTE',               cat:'acc'},
+  {id:66, nombre:'RUEDO',                cat:'acc'},
+  {id:67, nombre:'SACADA DE FA',         cat:'acc'},
+  {id:68, nombre:'TIKUNA',               cat:'acc'},
+  {id:69, nombre:'TISBÉ',                cat:'acc'},
+  {id:70, nombre:'VALENTINA QUINTERO',   cat:'acc'},
+  {id:71, nombre:'VANDA',                cat:'acc'},
+  {id:72, nombre:'VÍA EDÉN',             cat:'acc'},
+  {id:73, nombre:'VITRUM',               cat:'acc'},
+  {id:74, nombre:'VOLD',                 cat:'acc'},
+  // OBJETOS
+  {id:80, nombre:'EJE ARTESANO',         cat:'obj'},
+  {id:81, nombre:'FABRICA OBJETUAL',     cat:'obj'},
+  {id:82, nombre:'FRANCIA VILLABONA',    cat:'obj'},
+  {id:84, nombre:'ISABELA BERNAL',       cat:'obj'},
+  {id:85, nombre:'ISABELLE CASCABEL',    cat:'obj'},
+  {id:86, nombre:'ITERABILEM',           cat:'obj'},
+  {id:87, nombre:'JUGLANS Y REGIA',      cat:'obj'},
+  {id:88, nombre:'LA VIDA REAL',         cat:'obj'},
+  {id:89, nombre:'MIRRON',               cat:'obj'},
+];
+
+let data = [];
+let historial = [];
+let openBrand = null;
+let pieChart = null;
+let lineChart = null;
+let openRev = null;
+
+function initData(marcas) {
+  return marcas.map(m => ({ ...m, on:false, tipos:Object.fromEntries(TIPOS[m.cat].map(t=>[t,0])) }));
+}
+function load() {
+  const s = localStorage.getItem(KEY);
+  if (s) {
+    const stored = JSON.parse(s);
+    const storedIds = new Set(stored.map(d=>d.id));
+    data = [...stored, ...initData(MARCAS_INIT.filter(m=>!storedIds.has(m.id)))];
+  } else {
+    data = initData(MARCAS_INIT);
+  }
+  historial = JSON.parse(localStorage.getItem(KEY_HIST)||'[]');
+  save();
+}
+function save() {
+  localStorage.setItem(KEY, JSON.stringify(data));
+  localStorage.setItem(KEY_HIST, JSON.stringify(historial));
+}
+
+function brandTotal(d) { return Object.values(d.tipos).reduce((s,v)=>s+v,0); }
+function catTotal(cat) { return data.filter(d=>d.cat===cat).reduce((s,d)=>s+brandTotal(d),0); }
+
+function fmtDate(iso) {
+  const d = new Date(iso);
+  const dias = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  return `${dias[d.getDay()]} ${d.getDate()} ${meses[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function setDate() {
+  const now = new Date();
+  const dias = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  document.getElementById('hdr-date').innerHTML = `${dias[now.getDay()]}<br>${now.getDate()} de ${meses[now.getMonth()]}`;
+}
+
+function switchTab(tab) {
+  ['marcas','grafico','historial'].forEach((t,i) => {
+    document.querySelectorAll('.tab')[i].classList.toggle('active', t===tab);
+    document.getElementById('view-'+t).classList.toggle('active', t===tab);
+  });
+  if (tab==='grafico') renderGrafico();
+  if (tab==='historial') renderHistorial();
+}
+
+/* ── MARCAS ── */
+function renderMarcas() {
+  ['moda','acc','obj'].forEach(cat => {
+    const marcas = data.filter(d=>d.cat===cat).sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
+    const total = catTotal(cat);
+    const activas = marcas.filter(d=>d.on).length;
+    document.getElementById(`cnt-${cat}`).textContent = activas>0 ? `${activas} marcas · ${total} piezas` : '';
+    document.getElementById(`list-${cat}`).innerHTML = marcas.map(d => {
+      const tot = brandTotal(d);
+      const isOpen = openBrand===d.id;
+      return `<div class="brand-row">
+        <div class="brand-header" onclick="toggleBrand(${d.id})">
+          <div class="brand-toggle ${d.on?'on':''}" onclick="toggleOn(event,${d.id})"></div>
+          <div class="brand-name">${d.nombre}</div>
+          ${d.on?`<div style="text-align:right"><div class="brand-total">${tot}</div><div class="brand-total-label">piezas</div></div>`:''}
+          <div class="brand-chevron ${isOpen?'open':''}">▾</div>
+        </div>
+        <div class="brand-ficha ${isOpen?'open':''}" id="ficha-${d.id}">
+          <div class="ficha-title">Piezas por tipo</div>
+          ${TIPOS[cat].map(tipo=>`
+            <div class="tipo-row">
+              <div class="tipo-label">${tipo}</div>
+              <div class="qty-wrap">
+                <div class="qty-btn" onclick="changeQty(${d.id},'${tipo}',-1)">−</div>
+                <div class="qty-num">${d.tipos[tipo]||0}</div>
+                <div class="qty-btn" onclick="changeQty(${d.id},'${tipo}',1)">+</div>
+              </div>
+            </div>`).join('')}
+        </div>
+      </div>`;
+    }).join('');
+  });
+  const tp = data.reduce((s,d)=>s+brandTotal(d),0);
+  const ma = data.filter(d=>d.on).length;
+  document.getElementById('footer-stat').innerHTML = `<strong>${ma}</strong> marcas · <strong>${tp}</strong> piezas expuestas`;
+}
+
+function toggleBrand(id) {
+  openBrand = openBrand===id ? null : id;
+  renderMarcas();
+  if (openBrand) setTimeout(()=>{ const el=document.getElementById(`ficha-${id}`); if(el) el.scrollIntoView({behavior:'smooth',block:'nearest'}); },60);
+}
+function toggleOn(e,id) {
+  e.stopPropagation();
+  const d=data.find(x=>x.id===id); if(!d) return;
+  d.on=!d.on;
+  if(!d.on) Object.keys(d.tipos).forEach(k=>d.tipos[k]=0);
+  save(); renderMarcas();
+}
+function changeQty(id,tipo,delta) {
+  const d=data.find(x=>x.id===id); if(!d) return;
+  d.tipos[tipo]=Math.max(0,(d.tipos[tipo]||0)+delta);
+  d.on=brandTotal(d)>0;
+  save(); renderMarcas();
+}
+
+/* ── CERRAR REVISIÓN ── */
+function cerrarRevision() {
+  const tM=catTotal('moda'), tA=catTotal('acc'), tO=catTotal('obj');
+  const grand=tM+tA+tO;
+  if (grand===0) { alert('No hay piezas registradas. Llena la revisión antes de guardar.'); return; }
+  if (!confirm(`¿Cerrar y guardar esta revisión?\n\nModa: ${tM} piezas\nAccesorios: ${tA} piezas\nObjetos: ${tO} piezas\nTotal: ${grand} piezas`)) return;
+
+  // snapshot completo
+  const snap = {
+    id: Date.now(),
+    fecha: new Date().toISOString(),
+    totales: { moda:tM, acc:tA, obj:tO, total:grand },
+    marcas: data.filter(d=>d.on && brandTotal(d)>0).map(d=>({
+      id:d.id, nombre:d.nombre, cat:d.cat, total:brandTotal(d),
+      tipos:{...d.tipos}
+    }))
+  };
+  historial.push(snap);
+  save();
+
+  // reset
+  data.forEach(d=>{ d.on=false; Object.keys(d.tipos).forEach(k=>d.tipos[k]=0); });
+  openBrand=null;
+  save(); renderMarcas();
+
+  alert('✓ Revisión guardada. Puedes verla en la pestaña Historial.');
+  switchTab('historial');
+}
+
+/* ── GRÁFICO ACTUAL ── */
+function renderGrafico() {
+  const now=new Date();
+  const tM=catTotal('moda'), tA=catTotal('acc'), tO=catTotal('obj');
+  const grand=tM+tA+tO;
+  const pct=v=>grand>0?Math.round(v/grand*100):0;
+  document.getElementById('chart-sub').textContent = `${grand} piezas · ${now.getDate()}/${now.getMonth()+1}/${now.getFullYear()}`;
+  document.getElementById('big3').innerHTML = `
+    <div class="big3-card moda"><div class="big3-num">${tM}</div><div class="big3-label">Moda</div><div class="big3-pct">${pct(tM)}%</div></div>
+    <div class="big3-card acc"><div class="big3-num">${tA}</div><div class="big3-label">Accesorios</div><div class="big3-pct">${pct(tA)}%</div></div>
+    <div class="big3-card obj"><div class="big3-num">${tO}</div><div class="big3-label">Objetos</div><div class="big3-pct">${pct(tO)}%</div></div>`;
+
+  const canvas=document.getElementById('pie');
+  if (grand===0) {
+    canvas.style.display='none';
+    document.getElementById('desglose').innerHTML='<div class="empty-chart">Ingresa piezas en la pestaña Marcas</div>';
+    if(pieChart){pieChart.destroy();pieChart=null;} return;
+  }
+  canvas.style.display='block';
+  const slices=[{label:'Moda',value:tM,color:'#3D3060'},{label:'Accesorios',value:tA,color:'#2B5C48'},{label:'Objetos',value:tO,color:'#5C3A2B'}].filter(d=>d.value>0);
+  if(pieChart) pieChart.destroy();
+  pieChart=new Chart(canvas,{
+    type:'doughnut',
+    data:{ labels:slices.map(d=>d.label), datasets:[{data:slices.map(d=>d.value),backgroundColor:slices.map(d=>d.color),borderWidth:3,borderColor:'#F4F1EC'}] },
+    options:{ responsive:false, cutout:'55%', plugins:{ legend:{display:false}, tooltip:{callbacks:{label:ctx=>` ${ctx.parsed} piezas (${Math.round(ctx.parsed/grand*100)}%)`}} } }
+  });
+
+  const desgloseHTML=['moda','acc','obj'].map(cat=>{
+    const total=catTotal(cat); if(!total) return '';
+    const activas=data.filter(d=>d.cat===cat&&brandTotal(d)>0);
+    const color=CAT_COLORS[cat];
+    const tipoT={}; TIPOS[cat].forEach(t=>{tipoT[t]=activas.reduce((s,d)=>s+(d.tipos[t]||0),0);});
+    const maxT=Math.max(...Object.values(tipoT),1);
+    const maxM=Math.max(...activas.map(d=>brandTotal(d)),1);
+    return `<div class="desglose-section">
+      <div class="desglose-title ${cat}">${CAT_LABELS[cat]} — ${total} piezas</div>
+      <div class="desglose-rows">
+        <div class="d-section-label">Por tipo</div>
+        ${TIPOS[cat].map(t=>{const v=tipoT[t];const p=total>0?Math.round(v/total*100):0;return`<div class="d-row"><div class="d-name">${t}</div><div class="d-bar-track"><div class="d-bar-fill" style="width:${Math.round(v/maxT*100)}%;background:${color};"></div></div><div class="d-num">${v}</div><div class="d-pct">${p}%</div></div>`;}).join('')}
+        <div class="d-section-label" style="padding-top:12px;">Por marca</div>
+        ${activas.sort((a,b)=>brandTotal(b)-brandTotal(a)).map(d=>{const v=brandTotal(d);const p=total>0?Math.round(v/total*100):0;return`<div class="d-row"><div class="d-name">${d.nombre}</div><div class="d-bar-track"><div class="d-bar-fill" style="width:${Math.round(v/maxM*100)}%;background:${color};opacity:0.6;"></div></div><div class="d-num">${v}</div><div class="d-pct">${p}%</div></div>`;}).join('')}
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('desglose').innerHTML=desgloseHTML;
+}
+
+/* ── HISTORIAL ── */
+function renderHistorial() {
+  const cont = document.getElementById('hist-content');
+  document.getElementById('hist-sub').textContent = historial.length>0 ? `${historial.length} revisiones guardadas` : '';
+
+  if (!historial.length) {
+    cont.innerHTML='<div class="hist-empty">Aún no hay revisiones guardadas.<br>Llena la tienda y toca "Cerrar y guardar revisión".</div>';
+    return;
+  }
+
+  const sorted = [...historial].sort((a,b)=>new Date(a.fecha)-new Date(b.fecha));
+
+  // Gráfica de líneas
+  const labels = sorted.map(r=>fmtDate(r.fecha));
+  let lineHTML = `<div class="line-wrap"><h3>Evolución por categoría</h3><canvas id="line" height="200"></canvas></div>`;
+
+  // Tabla resumen
+  const tableRows = [...sorted].reverse().map(r=>{
+    const g=r.totales.total;
+    return `<tr>
+      <td class="fecha-col">${fmtDate(r.fecha)}</td>
+      <td class="num">${r.totales.total}</td>
+      <td class="num" style="color:#3D3060;">${r.totales.moda}</td>
+      <td class="pct">${g>0?Math.round(r.totales.moda/g*100):0}%</td>
+      <td class="num" style="color:#2B5C48;">${r.totales.acc}</td>
+      <td class="pct">${g>0?Math.round(r.totales.acc/g*100):0}%</td>
+      <td class="num" style="color:#5C3A2B;">${r.totales.obj}</td>
+      <td class="pct">${g>0?Math.round(r.totales.obj/g*100):0}%</td>
+    </tr>`;
+  }).join('');
+
+  const tableHTML = `<div class="hist-table-wrap">
+    <h3>Tabla comparativa</h3>
+    <div style="overflow-x:auto;">
+    <table class="htable">
+      <thead><tr>
+        <th>Fecha</th><th>Total</th>
+        <th><span class="cat-dot" style="background:#3D3060;"></span>Moda</th><th>%</th>
+        <th><span class="cat-dot" style="background:#2B5C48;"></span>Acc.</th><th>%</th>
+        <th><span class="cat-dot" style="background:#5C3A2B;"></span>Obj.</th><th>%</th>
+      </tr></thead>
+      <tbody>${tableRows}</tbody>
+    </table>
+    </div>
+  </div>`;
+
+  // Revisiones individuales
+  const revsHTML = [...sorted].reverse().map((r,i)=>{
+    const g=r.totales.total;
+    const isOpen=openRev===r.id;
+    const bycat={'moda':r.marcas.filter(m=>m.cat==='moda'),'acc':r.marcas.filter(m=>m.cat==='acc'),'obj':r.marcas.filter(m=>m.cat==='obj')};
+    const detailHTML = ['moda','acc','obj'].map(cat=>{
+      const ms=bycat[cat]; if(!ms.length) return '';
+      const tipoT={}; TIPOS[cat].forEach(t=>{tipoT[t]=ms.reduce((s,m)=>s+(m.tipos[t]||0),0);});
+      return `<div style="margin-bottom:12px;">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.07em;color:${CAT_COLORS[cat]};font-weight:500;margin-bottom:6px;">${CAT_LABELS[cat]}</div>
+        <table class="rev-dtable">
+          <thead><tr><th>Marca</th>${TIPOS[cat].map(t=>`<th style="text-align:right">${t}</th>`).join('')}<th style="text-align:right">Total</th></tr></thead>
+          <tbody>
+            ${ms.sort((a,b)=>b.total-a.total).map(m=>`<tr><td>${m.nombre}</td>${TIPOS[cat].map(t=>`<td style="text-align:right;color:var(--mid);">${m.tipos[t]||0}</td>`).join('')}<td style="text-align:right;font-weight:500;">${m.total}</td></tr>`).join('')}
+            <tr style="border-top:2px solid var(--border2);font-weight:500;">
+              <td>Total</td>${TIPOS[cat].map(t=>`<td style="text-align:right;">${tipoT[t]}</td>`).join('')}<td style="text-align:right;">${r.totales[cat]}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>`;
+    }).join('');
+    return `<div class="rev-card">
+      <div class="rev-card-header" onclick="toggleRev(${r.id})">
+        <div>
+          <div class="rev-card-title">${fmtDate(r.fecha)}</div>
+          <div class="rev-card-sub">${g} piezas · ${r.marcas.length} marcas</div>
+        </div>
+        <div class="rev-card-badges">
+          <span class="rev-badge moda">${r.totales.moda}</span>
+          <span class="rev-badge acc">${r.totales.acc}</span>
+          <span class="rev-badge obj">${r.totales.obj}</span>
+        </div>
+      </div>
+      <div class="rev-detail ${isOpen?'open':''}" id="revd-${r.id}">
+        ${detailHTML}
+        <div style="display:flex;justify-content:flex-end;margin-top:8px;">
+          <button class="btn-del-rev" onclick="eliminarRevision(${r.id})">Eliminar revisión</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  cont.innerHTML = lineHTML + tableHTML + `<div style="margin-bottom:12px;"><h3 style="font-family:'Cormorant Garamond',serif;font-weight:400;font-size:20px;margin-bottom:12px;">Revisiones</h3></div>` + revsHTML;
+
+  // Render line chart after DOM is ready
+  setTimeout(()=>{
+    const lc=document.getElementById('line'); if(!lc) return;
+    if(lineChart) lineChart.destroy();
+    lineChart=new Chart(lc,{
+      type:'line',
+      data:{
+        labels,
+        datasets:[
+          {label:'Moda',data:sorted.map(r=>r.totales.moda),borderColor:'#3D3060',backgroundColor:'rgba(61,48,96,0.08)',tension:0.3,pointRadius:5,pointBackgroundColor:'#3D3060'},
+          {label:'Accesorios',data:sorted.map(r=>r.totales.acc),borderColor:'#2B5C48',backgroundColor:'rgba(43,92,72,0.08)',tension:0.3,pointRadius:5,pointBackgroundColor:'#2B5C48'},
+          {label:'Objetos',data:sorted.map(r=>r.totales.obj),borderColor:'#5C3A2B',backgroundColor:'rgba(92,58,43,0.08)',tension:0.3,pointRadius:5,pointBackgroundColor:'#5C3A2B'},
+        ]
+      },
+      options:{
+        responsive:true,
+        plugins:{ legend:{position:'bottom', labels:{font:{family:'DM Sans'},boxWidth:10,padding:12}} },
+        scales:{
+          x:{ ticks:{font:{family:'DM Sans',size:10},maxRotation:30} },
+          y:{ ticks:{font:{family:'DM Sans',size:11}}, beginAtZero:true }
+        }
+      }
+    });
+  },100);
+}
+
+function toggleRev(id) { openRev=openRev===id?null:id; renderHistorial(); }
+function eliminarRevision(id) {
+  if(!confirm('¿Eliminar esta revisión?')) return;
+  historial=historial.filter(r=>r.id!==id); openRev=null;
+  save(); renderHistorial();
+}
+
+function resetDia() {
+  if(!confirm('¿Reiniciar todas las marcas y cantidades?')) return;
+  data.forEach(d=>{d.on=false;Object.keys(d.tipos).forEach(k=>d.tipos[k]=0);}); openBrand=null;
+  save(); renderMarcas();
+}
+
+load(); setDate(); renderMarcas();
+</script>
+</body>
+</html>
